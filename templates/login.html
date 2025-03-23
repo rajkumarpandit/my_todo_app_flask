@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - TaskFlow{% endblock %}
+
+{% block auth_content %}
+<style>
+    :root {
+        --primary: #6366f1;
+        --primary-hover: #4f46e5;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --background: #f8fafc;
+        --border: #e2e8f0;
+        --error: #ef4444;
+    }
+    
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        min-height: 100vh;
+        color: var(--text-primary);
+        background: linear-gradient(150deg, #ffffff 0%, #f1f5f9 100%);
+    }
+    
+    .login-container {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .header {
+        padding: 1.5rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .logo-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--primary), #8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .logo-icon {
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    
+    .logo-text {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: var(--text-primary);
+    }
+    
+    .login-section {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+    
+    .login-form-container {
+        max-width: 440px;
+        width: 100%;
+    }
+    
+    .login-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .login-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+        letter-spacing: -0.025em;
+    }
+    
+    .login-subtitle {
+        font-size: 1.05rem;
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+        letter-spacing: -0.01em;
+    }
+    
+    .form-container {
+        background-color: white;
+        border-radius: 16px;
+        padding: 2.5rem;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+    }
+    
+    .alert {
+        padding: 0.85rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+    
+    .alert-danger {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: var(--error);
+        border-left: 3px solid var(--error);
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.85rem 1rem;
+        font-size: 1rem;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        background-color: white;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+        color: var(--text-primary);
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+    
+    .form-control::placeholder {
+        color: #a1a1aa;
+    }
+    
+    .forgot-password {
+        display: block;
+        text-align: right;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .forgot-password a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .forgot-password a:hover {
+        text-decoration: underline;
+    }
+    
+    .btn {
+        width: 100%;
+        padding: 0.9rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 10px;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(to right, var(--primary), #818cf8);
+        color: white;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(to right, var(--primary-hover), #6366f1);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+    }
+    
+    .login-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+    }
+    
+    .login-footer a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .login-footer a:hover {
+        text-decoration: underline;
+    }
+    
+    .divider {
+        display: flex;
+        align-items: center;
+        margin: 1.5rem 0;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    .divider::before, 
+    .divider::after {
+        content: "";
+        flex: 1;
+        border-bottom: 1px solid var(--border);
+    }
+    
+    .divider::before {
+        margin-right: 0.75rem;
+    }
+    
+    .divider::after {
+        margin-left: 0.75rem;
+    }
+    
+    @media (max-width: 640px) {
+        .login-section {
+            padding: 1.5rem 1rem;
+        }
+        
+        .form-container {
+            padding: 1.5rem;
+        }
+        
+        .login-title {
+            font-size: 1.75rem;
+        }
+    }
+</style>
+
+<div class="login-container">
+    <header class="header">
+        <a href="{{ url_for('index') }}" class="logo-container">
+            <div class="logo-circle">
+                <span class="logo-icon">✓</span>
+            </div>
+            <span class="logo-text">TaskFlow</span>
+        </a>
+    </header>
+    
+    <section class="login-section">
+        <div class="login-form-container">
+            <div class="login-header">
+                <h1 class="login-title">Welcome back</h1>
+                <p class="login-subtitle">Sign in to continue managing your tasks</p>
+            </div>
+            
+            <div class="form-container">
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-danger">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                    </div>
+                    
+                    <div class="forgot-password">
+                        <a href="#">Forgot password?</a>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Sign in</button>
+                </form>
+            </div>
+            
+            <div class="login-footer">
+                <p>Don't have an account? <a href="{{ url_for('register') }}">Create account</a></p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

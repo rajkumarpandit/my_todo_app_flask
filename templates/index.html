@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - TODO App{% endblock %}
+
+{% block auth_content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+<div class="welcome-container">
+    <header class="header">
+        <div class="logo-container">
+            <div class="logo-circle">
+                <span class="logo-icon">✓</span>
+            </div>
+            <span class="logo-text">TaskFlow</span>
+        </div>
+        <div class="header-actions">
+            <a href="#features" class="header-link">Features</a>
+            <a href="#pricing" class="header-link">Pricing</a>
+            <a href="#about" class="header-link">About</a>
+            <a href="{{ url_for('login') }}" class="header-link">Log in</a>
+            <a href="{{ url_for('register') }}" class="btn btn-primary">Get Started</a>
+        </div>
+    </header>
+    
+    <section class="hero-section">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">Organize your work and life with ease</h1>
+                <p class="hero-subtitle">TaskFlow helps you stay focused, meet deadlines, and manage projects with an intuitive interface designed for productivity.</p>
+                <div class="hero-buttons">
+                    <a href="{{ url_for('register') }}" class="hero-btn hero-btn-primary">Create free account</a>
+                    <a href="#how-it-works" class="hero-btn hero-btn-outline">How it works</a>
+                </div>
+                <div class="social-proof">
+                    <div class="rating">
+                        <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                    </div>
+                    <p class="social-proof-text">Trusted by over 10,000 professionals worldwide</p>
+                </div>
+            </div>
+            <!-- <div class="hero-image">
+                <img src="/api/placeholder/600/400" alt="TaskFlow Dashboard Preview" class="dashboard-preview" />
+            </div> -->
+        </div>
+    </section>
+</div>
+{% endblock %}

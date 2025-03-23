@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}{{ period|replace('-', ' ')|title }} TODOs - TaskFlow{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+<div class="app-container">
+    <!-- Updated sidebar section -->
+    <nav class="sidebar">
+        <div class="period-nav">
+            <a href="{{ url_for('today_todos') }}" class="period-link {% if period == 'today' %}active{% endif %}">Today</a>
+            <a href="{{ url_for('yesterday_todos') }}" class="period-link {% if period == 'yesterday' %}active{% endif %}">Yesterday</a>
+            <a href="{{ url_for('this_week_todos') }}" class="period-link {% if period == 'this-week' %}active{% endif %}">This Week</a>
+            <a href="{{ url_for('last_week_todos') }}" class="period-link {% if period == 'last-week' %}active{% endif %}">Last Week</a>
+            <a href="{{ url_for('this_month_todos') }}" class="period-link {% if period == 'this-month' %}active{% endif %}">This Month</a>
+            <a href="{{ url_for('older_todos') }}" class="period-link {% if period == 'older' %}active{% endif %}">Older</a>
+            <div style="margin-top: 2rem;">
+                <a href="{{ url_for('logout') }}" class="period-link">Logout</a>
+            </div>
+        </div>
+        <div class="user-info">
+            Welcome, {{ current_user.username }}
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="todo-header">
+            <h1 class="todo-title">{{ period|replace('-', ' ')|title }} Todos</h1>
+        </div>
+
+        {% if period == 'today' %}
+        <form method="POST" action="{{ url_for('add_todo') }}" class="add-todo-form">
+            <div class="form-group">
+                <input type="text" class="form-control" name="content" placeholder="Add new todo..." required>
+                <button type="submit" class="btn btn-primary">Add</button>
+            </div>
+        </form>
+        {% endif %}
+
+        <div class="todo-tabs">
+            <button class="tab-btn active" data-tab="active">Active</button>
+            <button class="tab-btn" data-tab="completed">Completed</button>
+        </div>
+
+        <div class="todo-list-container">
+            <!-- Active Todos Tab -->
+            <div class="todo-list active-tab" id="active-tab">
+                {% if todos %}
+                    {% for todo in todos if not todo.completed %}
+                    <div class="todo-item">
+                        <button class="status-btn incomplete"
+                                data-complete-url="{{ url_for('complete_todo', id=todo.id) }}">
+                            ◻
+                        </button>
+                        
+                        <div class="todo-content">
+                            {{ todo.content }}
+                        </div>
+                        
+                        <div class="todo-dates">
+                            <div class="created-at">
+                                Created: {{ todo.created_at.strftime('%b %d, %H:%M') }}
+                            </div>
+                            <div class="target-date">
+                                Target: {{ todo.target_date.strftime('%b %d, %H:%M') }}
+                            </div>
+                            {% if todo.completed_at %}
+                            <div class="completed-at">
+                                Completed: {{ todo.completed_at.strftime('%b %d, %H:%M') }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="todo-actions">
+                            <button class="action-btn edit-btn" 
+                                    data-todo-id="{{ todo.id }}" 
+                                    data-todo-content="{{ todo.content }}"
+                                    data-todo-target-date="{{ todo.target_date.strftime('%Y-%m-%dT%H:%M') }}">Edit</button>
+                            <button class="action-btn delete-btn" data-delete-url="{{ url_for('delete_todo', id=todo.id) }}">Delete</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <p>No active todos found for this period.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Completed Todos Tab -->
+            <div class="todo-list completed-tab" id="completed-tab" style="display: none;">
+                {% if todos %}
+                    {% for todo in todos if todo.completed %}
+                    <div class="todo-item">
+                        <div class="todo-content completed">
+                            {{ todo.content }}
+                        </div>
+                        
+                        <div class="todo-dates">
+                            <div class="target-date">
+                                Target: {{ todo.target_date.strftime('%b %d, %H:%M') }}
+                            </div>
+                            {% if todo.completed_at %}
+                            <div class="completed-at">
+                                Completed: {{ todo.completed_at.strftime('%b %d, %H:%M') }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="todo-actions">
+                            <button class="action-btn move-btn" data-complete-url="{{ url_for('complete_todo', id=todo.id) }}">Move to Active</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <p>No completed todos found for this period.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Add Edit Modal -->
+{% for todo in todos if not todo.completed %}
+<div id="editModal{{ todo.id }}" class="modal-overlay">
+    <div class="modal-content">
+        <form method="POST" action="{{ url_for('edit_todo', id=todo.id) }}">
+            <div class="form-group">
+                <input type="text" class="form-control" name="content" value="{{ todo.content }}" required>
+                <input type="datetime-local" class="form-control" name="target_date" 
+                       value="{{ todo.target_date.astimezone(get_system_timezone()).strftime('%Y-%m-%dT%H:%M') }}" required>
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-secondary" onclick="closeEditModal({{ todo.id }})">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tab switching functionality
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const activeTab = document.getElementById('active-tab');
+        const completedTab = document.getElementById('completed-tab');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active tab button
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Show/hide appropriate tab content
+                if (btn.dataset.tab === 'active') {
+                    activeTab.style.display = 'block';
+                    completedTab.style.display = 'none';
+                } else {
+                    activeTab.style.display = 'none';
+                    completedTab.style.display = 'block';
+                }
+            });
+        });
+
+        // Complete todo
+        document.querySelectorAll('[data-complete-url]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                window.location.href = btn.dataset.completeUrl;
+            });
+        });
+
+        // Edit todo
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const todoId = btn.dataset.todoId;
+                const modal = document.getElementById(`editModal${todoId}`);
+                if (modal) {
+                    const contentInput = modal.querySelector('input[name="content"]');
+                    const targetDateInput = modal.querySelector('input[name="target_date"]');
+                    
+                    if (contentInput) {
+                        contentInput.value = btn.dataset.todoContent;
+                    }
+                    if (targetDateInput) {
+                        targetDateInput.value = btn.dataset.todoTargetDate;
+                    }
+                    
+                    modal.style.display = 'flex';
+                    contentInput.focus();
+                    contentInput.select();
+                }
+            });
+        });
+
+        // Delete todo
+        document.querySelectorAll('[data-delete-url]').forEach(btn => {
+            btn.addEventListener('click', () => confirmDelete(btn.dataset.deleteUrl));
+        });
+    });
+
+    function confirmDelete(url) {
+        if (confirm('Are you sure you want to delete this todo?')) {
+            window.location.href = url;
+        }
+    }
+
+    function closeEditModal(id) {
+        const modal = document.getElementById(`editModal${id}`);
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}
